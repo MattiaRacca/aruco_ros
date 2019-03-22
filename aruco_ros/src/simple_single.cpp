@@ -64,7 +64,7 @@ private:
   image_transport::Publisher image_pub;
   image_transport::Publisher debug_pub;
   ros::Publisher pose_pub;
-  ros::Publisher transform_pub; 
+  ros::Publisher transform_pub;
   ros::Publisher position_pub;
   ros::Publisher marker_pub; //rviz visualization marker
   ros::Publisher pixel_pub;
@@ -92,14 +92,14 @@ public:
 
     std::string refinementMethod;
     nh.param<std::string>("corner_refinement", refinementMethod, "LINES");
-    if ( refinementMethod == "SUBPIX" )
+    if (refinementMethod == "SUBPIX")
       mDetector.setCornerRefinementMethod(aruco::MarkerDetector::SUBPIX);
-    else if ( refinementMethod == "HARRIS" )
+    else if (refinementMethod == "HARRIS")
       mDetector.setCornerRefinementMethod(aruco::MarkerDetector::HARRIS);
-    else if ( refinementMethod == "NONE" )
-      mDetector.setCornerRefinementMethod(aruco::MarkerDetector::NONE); 
-    else      
-      mDetector.setCornerRefinementMethod(aruco::MarkerDetector::LINES); 
+    else if (refinementMethod == "NONE")
+      mDetector.setCornerRefinementMethod(aruco::MarkerDetector::NONE);
+    else
+      mDetector.setCornerRefinementMethod(aruco::MarkerDetector::LINES);
 
     //Print parameters of aruco marker detector:
     ROS_INFO_STREAM("Corner refinement method: " << mDetector.getCornerRefinementMethod());
@@ -111,7 +111,7 @@ public:
     mDetector.getMinMaxSize(mins, maxs);
     ROS_INFO_STREAM("Marker size min: " << mins << "  max: " << maxs);
     ROS_INFO_STREAM("Desired speed: " << mDetector.getDesiredSpeed());
-    
+
 
 
     image_sub = it.subscribe("/image", 1, &ArucoSimple::image_callback, this);
@@ -134,7 +134,7 @@ public:
 
     ROS_ASSERT(camera_frame != "" && marker_frame != "");
 
-    if ( reference_frame.empty() )
+    if (reference_frame.empty())
       reference_frame = camera_frame;
 
     ROS_INFO("Aruco node started with marker size of %f m and marker id to track: %d",
@@ -151,13 +151,13 @@ public:
   {
     std::string errMsg;
 
-    if ( !_tfListener.waitForTransform(refFrame,
-                                       childFrame,
-                                       ros::Time(0),
-                                       ros::Duration(0.5),
-                                       ros::Duration(0.01),
-                                       &errMsg)
-         )
+    if (!_tfListener.waitForTransform(refFrame,
+                                      childFrame,
+                                      ros::Time(0),
+                                      ros::Duration(0.5),
+                                      ros::Duration(0.01),
+                                      &errMsg)
+       )
     {
       ROS_ERROR_STREAM("Unable to get pose from TF: " << errMsg);
       return false;
@@ -166,11 +166,11 @@ public:
     {
       try
       {
-        _tfListener.lookupTransform( refFrame, childFrame,
-                                     ros::Time(0),                  //get latest available
-                                     transform);
+        _tfListener.lookupTransform(refFrame, childFrame,
+                                    ros::Time(0),                  //get latest available
+                                    transform);
       }
-      catch ( const tf::TransformException& e)
+      catch (const tf::TransformException& e)
       {
         ROS_ERROR_STREAM("Error in lookupTransform of " << childFrame << " in " << refFrame);
         return false;
@@ -196,7 +196,7 @@ public:
     }
 
     static tf::TransformBroadcaster br;
-    if(cam_info_received)
+    if (cam_info_received)
     {
       ros::Time curr_stamp(ros::Time::now());
       cv_bridge::CvImagePtr cv_ptr;
@@ -210,25 +210,25 @@ public:
         //Ok, let's detect
         mDetector.detect(inImage, markers, camParam, marker_size, false);
         //for each marker, draw info and its boundaries in the image
-        for(size_t i=0; i<markers.size(); ++i)
+        for (size_t i = 0; i < markers.size(); ++i)
         {
           // only publishing the selected marker
-          if(markers[i].id == marker_id)
+          if (markers[i].id == marker_id)
           {
             tf::Transform transform = aruco_ros::arucoMarker2Tf(markers[i]);
             tf::StampedTransform cameraToReference;
             cameraToReference.setIdentity();
 
-            if ( reference_frame != camera_frame )
+            if (reference_frame != camera_frame)
             {
               getTransform(reference_frame,
                            camera_frame,
                            cameraToReference);
             }
 
-            transform = 
-              static_cast<tf::Transform>(cameraToReference) 
-              * static_cast<tf::Transform>(rightToLeft) 
+            transform =
+              static_cast<tf::Transform>(cameraToReference)
+              * static_cast<tf::Transform>(rightToLeft)
               * transform;
 
             tf::StampedTransform stampedTransform(transform, curr_stamp,
@@ -275,19 +275,19 @@ public:
 
           }
           // but drawing all the detected markers
-          markers[i].draw(inImage,cv::Scalar(0,0,255),2);
+          markers[i].draw(inImage, cv::Scalar(0, 0, 255), 2);
         }
 
         //draw a 3d cube in each marker if there is 3d info
-        if(camParam.isValid() && marker_size!=-1)
+        if (camParam.isValid() && marker_size != -1)
         {
-          for(size_t i=0; i<markers.size(); ++i)
+          for (size_t i = 0; i < markers.size(); ++i)
           {
             CvDrawingUtils::draw3dAxis(inImage, markers[i], camParam);
           }
         }
 
-        if(image_pub.getNumSubscribers() > 0)
+        if (image_pub.getNumSubscribers() > 0)
         {
           //show input with augmented information
           cv_bridge::CvImage out_msg;
@@ -297,7 +297,7 @@ public:
           image_pub.publish(out_msg.toImageMsg());
         }
 
-        if(debug_pub.getNumSubscribers() > 0)
+        if (debug_pub.getNumSubscribers() > 0)
         {
           //show also the internal image resulting from the threshold operation
           cv_bridge::CvImage debug_msg;
@@ -324,10 +324,10 @@ public:
     // see the sensor_msgs/CamaraInfo documentation for details
     rightToLeft.setIdentity();
     rightToLeft.setOrigin(
-        tf::Vector3(
-            -msg.P[3]/msg.P[0],
-            -msg.P[7]/msg.P[5],
-            0.0));
+      tf::Vector3(
+        -msg.P[3] / msg.P[0],
+        -msg.P[7] / msg.P[5],
+        0.0));
 
     cam_info_received = true;
     cam_info_sub.shutdown();
@@ -336,7 +336,7 @@ public:
 
   void reconf_callback(aruco_ros::ArucoThresholdConfig &config, uint32_t level)
   {
-    mDetector.setThresholdParams(config.param1,config.param2);
+    mDetector.setThresholdParams(config.param1, config.param2);
     if (config.normalizeImage)
     {
       ROS_WARN("normalizeImageIllumination is unimplemented!");
@@ -345,7 +345,7 @@ public:
 };
 
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
   ros::init(argc, argv, "aruco_simple");
 

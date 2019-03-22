@@ -76,7 +76,7 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
 {
   double ticksBefore = cv::getTickCount();
   static tf::TransformBroadcaster br;
-  if(cam_info_received)
+  if (cam_info_received)
   {
     ros::Time curr_stamp(ros::Time::now());
     cv_bridge::CvImagePtr cv_ptr;
@@ -85,7 +85,7 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
       cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGB8);
       inImage = cv_ptr->image;
 
-      if(normalizeImageIllumination)
+      if (normalizeImageIllumination)
       {
         ROS_WARN("normalizeImageIllumination is unimplemented!");
         //cv::Mat inImageNorm;
@@ -98,10 +98,10 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
       //Ok, let's detect
       mDetector.detect(inImage, markers, camParam, marker_size);
       //for each marker, draw info and its boundaries in the image
-      for(unsigned int i=0; i<markers.size(); ++i)
+      for (unsigned int i = 0; i < markers.size(); ++i)
       {
         // only publishing the selected marker
-        if ( markers[i].id == marker_id1 )
+        if (markers[i].id == marker_id1)
         {
           tf::Transform transform = aruco_ros::arucoMarker2Tf(markers[i]);
           br.sendTransform(tf::StampedTransform(transform, curr_stamp,
@@ -110,7 +110,7 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
           tf::poseTFToMsg(transform, poseMsg);
           pose_pub1.publish(poseMsg);
         }
-        else if ( markers[i].id == marker_id2 )
+        else if (markers[i].id == marker_id2)
         {
           tf::Transform transform = aruco_ros::arucoMarker2Tf(markers[i]);
           br.sendTransform(tf::StampedTransform(transform, curr_stamp,
@@ -121,33 +121,33 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
         }
 
         // but drawing all the detected markers
-        markers[i].draw(inImage,Scalar(0,0,255),2);
+        markers[i].draw(inImage, Scalar(0, 0, 255), 2);
       }
 
       //paint a circle in the center of the image
-      cv::circle(inImage, cv::Point(inImage.cols/2, inImage.rows/2), 4, cv::Scalar(0,255,0), 1);
+      cv::circle(inImage, cv::Point(inImage.cols / 2, inImage.rows / 2), 4, cv::Scalar(0, 255, 0), 1);
 
-      if ( markers.size() == 2 )
+      if (markers.size() == 2)
       {
         float x[2], y[2], u[2], v[2];
         for (unsigned int i = 0; i < 2; ++i)
         {
           ROS_DEBUG_STREAM("Marker(" << i << ") at camera coordinates = ("
-                           << markers[i].Tvec.at<float>(0,0) << ", "
-                           << markers[i].Tvec.at<float>(1,0) << ", "
-                           << markers[i].Tvec.at<float>(2,0));
+                           << markers[i].Tvec.at<float>(0, 0) << ", "
+                           << markers[i].Tvec.at<float>(1, 0) << ", "
+                           << markers[i].Tvec.at<float>(2, 0));
           //normalized coordinates of the marker
-          x[i] = markers[i].Tvec.at<float>(0,0)/markers[i].Tvec.at<float>(2,0);
-          y[i] = markers[i].Tvec.at<float>(1,0)/markers[i].Tvec.at<float>(2,0);
+          x[i] = markers[i].Tvec.at<float>(0, 0) / markers[i].Tvec.at<float>(2, 0);
+          y[i] = markers[i].Tvec.at<float>(1, 0) / markers[i].Tvec.at<float>(2, 0);
           //undistorted pixel
-          u[i] = x[i]*camParam.CameraMatrix.at<float>(0,0) +
-              camParam.CameraMatrix.at<float>(0,2);
-          v[i] = y[i]*camParam.CameraMatrix.at<float>(1,1) +
-              camParam.CameraMatrix.at<float>(1,2);
+          u[i] = x[i] * camParam.CameraMatrix.at<float>(0, 0) +
+                 camParam.CameraMatrix.at<float>(0, 2);
+          v[i] = y[i] * camParam.CameraMatrix.at<float>(1, 1) +
+                 camParam.CameraMatrix.at<float>(1, 2);
         }
 
         ROS_DEBUG_STREAM("Mid point between the two markers in the image = ("
-                         << (x[0]+x[1])/2 << ", " << (y[0]+y[1])/2 << ")");
+                         << (x[0] + x[1]) / 2 << ", " << (y[0] + y[1]) / 2 << ")");
 
         //              //paint a circle in the mid point of the normalized coordinates of both markers
         //              cv::circle(inImage,
@@ -157,17 +157,17 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
 
         //compute the midpoint in 3D:
         float midPoint3D[3]; //3D point
-        for (unsigned int i = 0; i < 3; ++i )
-          midPoint3D[i] = ( markers[0].Tvec.at<float>(i,0) +
-                            markers[1].Tvec.at<float>(i,0) ) / 2;
+        for (unsigned int i = 0; i < 3; ++i)
+          midPoint3D[i] = (markers[0].Tvec.at<float>(i, 0) +
+                           markers[1].Tvec.at<float>(i, 0)) / 2;
         //now project the 3D mid point to normalized coordinates
         float midPointNormalized[2];
-        midPointNormalized[0] = midPoint3D[0]/midPoint3D[2]; //x
-        midPointNormalized[1] = midPoint3D[1]/midPoint3D[2]; //y
-        u[0] = midPointNormalized[0]*camParam.CameraMatrix.at<float>(0,0) +
-            camParam.CameraMatrix.at<float>(0,2);
-        v[0] = midPointNormalized[1]*camParam.CameraMatrix.at<float>(1,1) +
-            camParam.CameraMatrix.at<float>(1,2);
+        midPointNormalized[0] = midPoint3D[0] / midPoint3D[2]; //x
+        midPointNormalized[1] = midPoint3D[1] / midPoint3D[2]; //y
+        u[0] = midPointNormalized[0] * camParam.CameraMatrix.at<float>(0, 0) +
+               camParam.CameraMatrix.at<float>(0, 2);
+        v[0] = midPointNormalized[1] * camParam.CameraMatrix.at<float>(1, 1) +
+               camParam.CameraMatrix.at<float>(1, 2);
 
         ROS_DEBUG_STREAM("3D Mid point between the two markers in undistorted pixel coordinates = ("
                          << u[0] << ", " << v[0] << ")");
@@ -175,20 +175,20 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
         //paint a circle in the mid point of the normalized coordinates of both markers
         cv::circle(inImage,
                    cv::Point(u[0], v[0]),
-                   3, cv::Scalar(0,0,255), CV_FILLED);
+                   3, cv::Scalar(0, 0, 255), CV_FILLED);
 
       }
 
       //draw a 3d cube in each marker if there is 3d info
-      if(camParam.isValid() && marker_size!=-1)
+      if (camParam.isValid() && marker_size != -1)
       {
-        for(unsigned int i=0; i<markers.size(); ++i)
+        for (unsigned int i = 0; i < markers.size(); ++i)
         {
           CvDrawingUtils::draw3dCube(inImage, markers[i], camParam);
         }
       }
 
-      if(image_pub.getNumSubscribers() > 0)
+      if (image_pub.getNumSubscribers() > 0)
       {
         //show input with augmented information
         cv_bridge::CvImage out_msg;
@@ -198,7 +198,7 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
         image_pub.publish(out_msg.toImageMsg());
       }
 
-      if(debug_pub.getNumSubscribers() > 0)
+      if (debug_pub.getNumSubscribers() > 0)
       {
         //show also the internal image resulting from the threshold operation
         cv_bridge::CvImage debug_msg;
@@ -209,7 +209,7 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg)
       }
 
       ROS_DEBUG("runtime: %f ms",
-                1000*(cv::getTickCount() - ticksBefore)/cv::getTickFrequency());
+                1000 * (cv::getTickCount() - ticksBefore) / cv::getTickFrequency());
     }
     catch (cv_bridge::Exception& e)
     {
@@ -229,12 +229,12 @@ void cam_info_callback(const sensor_msgs::CameraInfo &msg)
 
 void reconf_callback(aruco_ros::ArucoThresholdConfig &config, uint32_t level)
 {
-  mDetector.setThresholdParams(config.param1,config.param2);
+  mDetector.setThresholdParams(config.param1, config.param2);
   normalizeImageIllumination = config.normalizeImage;
   dctComponentsToRemove      = config.dctComponentsToRemove;
 }
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
   ros::init(argc, argv, "aruco_simple");
   ros::NodeHandle nh("~");
@@ -264,13 +264,13 @@ int main(int argc,char **argv)
   nh.param<int>("marker_id2", marker_id2, 26);
   nh.param<bool>("normalizeImage", normalizeImageIllumination, true);
   nh.param<int>("dct_components_to_remove", dctComponentsToRemove, 2);
-  if(dctComponentsToRemove == 0)
+  if (dctComponentsToRemove == 0)
     normalizeImageIllumination = false;
   nh.param<std::string>("parent_name", parent_name, "");
   nh.param<std::string>("child_name1", child_name1, "");
   nh.param<std::string>("child_name2", child_name2, "");
 
-  if(parent_name == "" || child_name1 == "" || child_name2 == "")
+  if (parent_name == "" || child_name1 == "" || child_name2 == "")
   {
     ROS_ERROR("parent_name and/or child_name was not set!");
     return -1;

@@ -24,7 +24,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES aruco_ros_utils
-  CATKIN_DEPENDS aruco sensor_msgs tf 
+  CATKIN_DEPENDS aruco sensor_msgs tf
 )
 
 include_directories(
