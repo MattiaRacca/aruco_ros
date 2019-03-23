@@ -77,9 +77,6 @@ void ArucoMarkerPublisher::image_callback(const sensor_msgs::ImageConstPtr& msg)
   bool publishImage = image_pub_.getNumSubscribers() > 0;
   bool publishDebug = debug_pub_.getNumSubscribers() > 0;
 
-  if (!publishMarkers && !publishMarkersList && !publishImage && !publishDebug)
-    return;
-
   ros::Time curr_stamp(ros::Time::now());
   cv_bridge::CvImagePtr cv_ptr;
   try
@@ -142,6 +139,9 @@ void ArucoMarkerPublisher::image_callback(const sensor_msgs::ImageConstPtr& msg)
                                      ros::Time::now(), reference_frame_, tmp_marker_name));
       }
     }
+
+    if (!publishMarkers && !publishMarkersList && !publishImage && !publishDebug)
+      return;
 
     //publish marker array
     if (marker_msg_->markers.size() > 0)
